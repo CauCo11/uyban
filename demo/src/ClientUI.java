@@ -154,6 +154,62 @@ public class ClientUI extends JFrame {
                             }
                         }
                     }
+                    
+                    // Nhận cập nhật trạng thái phiếu từ server
+                    if (line.startsWith("UPDATE_TICKET|")) {
+                        String[] parts = line.split("\\|");
+                        if (parts.length >= 4) {
+                            String dept = parts[1];
+                            String code = parts[2];
+                            String status = parts[3];
+                            
+                            // Cập nhật trong map
+                            List<String[]> tickets = ticketsMap.get(dept);
+                            if (tickets != null) {
+                                for (String[] ticket : tickets) {
+                                    if (ticket[0].equals(code)) {
+                                        ticket[1] = status;
+                                        break;
+                                    }
+                                }
+                            }
+                            
+                            // Nếu đang ở đúng bộ phận thì cập nhật bảng
+                            if (dept.equals(currentDepartment) && currentTicketPanel != null) {
+                                SwingUtilities.invokeLater(() -> {
+                                    currentTicketPanel.clearTickets();
+                                    for (String[] t : tickets) {
+                                        currentTicketPanel.addTicket(t[0], t[1]);
+                                    }
+                                });
+                            }
+                        }
+                    }
+                    
+                    // Nhận yêu cầu xóa phiếu từ server
+                    if (line.startsWith("REMOVE_TICKET|")) {
+                        String[] parts = line.split("\\|");
+                        if (parts.length >= 3) {
+                            String dept = parts[1];
+                            String code = parts[2];
+                            
+                            // Xóa khỏi map
+                            List<String[]> tickets = ticketsMap.get(dept);
+                            if (tickets != null) {
+                                tickets.removeIf(ticket -> ticket[0].equals(code));
+                            }
+                            
+                            // Nếu đang ở đúng bộ phận thì cập nhật bảng
+                            if (dept.equals(currentDepartment) && currentTicketPanel != null) {
+                                SwingUtilities.invokeLater(() -> {
+                                    currentTicketPanel.clearTickets();
+                                    for (String[] t : tickets) {
+                                        currentTicketPanel.addTicket(t[0], t[1]);
+                                    }
+                                });
+                            }
+                        }
+                    }
                 }
             } catch (IOException e) {
                 updateStatus("Không kết nối được tới máy chủ!");
@@ -169,6 +225,27 @@ public class ClientUI extends JFrame {
         setContentPane(mainPanel);
         revalidate();
         repaint();
+    }
+
+    public void sendCallNextRequest(String departmentName) {
+        if (out != null) {
+            out.println("CALL_NEXT|" + departmentName);
+            updateStatus("Đã gửi yêu cầu gọi tiếp cho " + departmentName);
+        }
+    }
+
+    public void sendRepeatCallRequest(String departmentName) {
+        if (out != null) {
+            out.println("REPEAT_CALL|" + departmentName);
+            updateStatus("Đã gửi yêu cầu nhắc lại cho " + departmentName);
+        }
+    }
+
+    public void sendCompleteTicketRequest(String departmentName) {
+        if (out != null) {
+            out.println("COMPLETE_TICKET|" + departmentName);
+            updateStatus("Đã gửi yêu cầu hoàn thành phiếu cho " + departmentName);
+        }
     }
 
     public static void main(String[] args) {

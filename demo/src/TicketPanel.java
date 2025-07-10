@@ -4,8 +4,12 @@ import java.awt.*;
 
 public class TicketPanel extends JPanel {
     private DefaultTableModel tableModel;
+    private ClientUI parent;
+    private String departmentName;
 
     public TicketPanel(String departmentName, ClientUI parent) {
+        this.parent = parent;
+        this.departmentName = departmentName;
         setLayout(new BorderLayout());
         setBackground(new Color(245, 245, 245));
 
@@ -53,10 +57,32 @@ public class TicketPanel extends JPanel {
         // Panel chứa các nút chức năng
         JPanel buttonPanel = new JPanel(new GridLayout(1, 4, 16, 0));
         buttonPanel.setBackground(new Color(245, 245, 245));
-        String[] btns = {"gọi", "nhắc lại", "Quay lại", "Tiếp"};
+        String[] btns = {"nhắc lại", "Tiếp"};
         for (String txt : btns) {
             JButton b = new JButton(txt);
             b.setFont(new Font("Arial", Font.PLAIN, 18));
+
+            // Add action for "Tiếp" button
+            if (txt.equals("Tiếp")) {
+                b.addActionListener(e -> {
+                    parent.sendCallNextRequest(departmentName);
+                });
+            }
+            
+            // Add action for "nhắc lại" button
+            if (txt.equals("nhắc lại")) {
+                b.addActionListener(e -> {
+                    parent.sendRepeatCallRequest(departmentName);
+                });
+            }
+            
+            // Add action for "Quay lại" button
+            if (txt.equals("Quay lại")) {
+                b.addActionListener(e -> {
+                    parent.sendCompleteTicketRequest(departmentName);
+                });
+            }
+
             buttonPanel.add(b);
         }
         buttonPanel.setBorder(BorderFactory.createEmptyBorder(16, 0, 0, 0));

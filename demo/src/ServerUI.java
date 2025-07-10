@@ -13,6 +13,8 @@ public class ServerUI extends JFrame {
     private Map<String, List<Ticket>> ticketsMap = new HashMap<>();
     // Đếm số phiếu từng bộ phận
     private Map<String, Integer> ticketCounter = new HashMap<>();
+    // Đếm số phiếu đã gọi cho từng bộ phận
+    private Map<String, Integer> calledCounter = new HashMap<>();
     private final List<PrintWriter> clientOutputs = Collections.synchronizedList(new ArrayList<>());
 
     public ServerUI() {
@@ -56,7 +58,8 @@ public class ServerUI extends JFrame {
                 // Tăng số phiếu
                 int count = ticketCounter.get(name) + 1;
                 ticketCounter.put(name, count);
-                String ticketCode = String.format("%03d", count);
+                String counterNumber = Config.getDepartmentCounter(name);
+                String ticketCode = counterNumber + String.format("%03d", count);
                 // Khi tạo mới, trạng thái là "chờ xử lý"
                 Ticket ticket = new Ticket(ticketCode, "chờ xử lý");
                 ticketsMap.get(name).add(ticket);
@@ -94,6 +97,7 @@ public class ServerUI extends JFrame {
         for (String name : Config.DEPARTMENTS) {
             ticketsMap.put(name, new ArrayList<>());
             ticketCounter.put(name, 0);
+            calledCounter.put(name, 0);
         }
     }
 
@@ -143,6 +147,121 @@ public class ServerUI extends JFrame {
                     continue;
                 }
 
+                // Xử lý yêu cầu gọi tiếp
+                if (line.startsWith("CALL_NEXT|")) {
+                    String dept = line.substring("CALL_NEXT|".length());
+                    List<Ticket> tickets = ticketsMap.get(dept);
+                    int nextIndex = calledCounter.get(dept);
+                    
+                    if (tickets != null && nextIndex < tickets.size()) {
+                        Ticket ticket = tickets.get(nextIndex);
+                        
+                        // Xóa tất cả phiếu có số nhỏ hơn phiếu hiện tại
+                        String currentTicketNumber = ticket.getCode();
+                        List<Ticket> ticketsToRemove = new ArrayList<>();
+                        
+                        for (Ticket t : tickets) {
+                            if (compareTicketNumbers(t.getCode(), currentTicketNumber) < 0) {
+                                ticketsToRemove.add(t);
+                            }
+                        }
+                        
+                        // Xóa các phiếu nhỏ hơn
+                        for (Ticket t : ticketsToRemove) {
+                            tickets.remove(t);
+                            // Thông báo cho client xóa phiếu
+                            synchronized (clientOutputs) {
+                                for (PrintWriter clientOut : clientOutputs) {
+                                    clientOut.println("REMOVE_TICKET|" + dept + "|" + t.getCode());
+                                }
+                            }
+                        }
+                        
+                        // Cập nhật lại index sau khi xóa
+                        nextIndex = Math.max(0, nextIndex - ticketsToRemove.size());
+                        calledCounter.put(dept, nextIndex);
+                        
+                        // Tìm lại phiếu hiện tại sau khi xóa
+                        if (nextIndex < tickets.size()) {
+                            ticket = tickets.get(nextIndex);
+                            
+                            // Đổi trạng thái thành "đang xử lý"
+                            ticket.setStatus("đang xử lý");
+                            
+                            // Tăng counter để lần sau gọi phiếu tiếp theo
+                            calledCounter.put(dept, nextIndex + 1);
+                            
+                            // Lấy số quầy từ Config
+                            String counterNumber = Config.getDepartmentCounter(dept);
+                            
+                            // Gọi AudioCaller để phát âm thanh
+                            AudioCaller.playTicketCall(ticket.getCode(), counterNumber);
+                            
+                            updateStatus("Đã gọi phiếu " + ticket.getCode() + " quầy " + counterNumber);
+                            
+                            // Thông báo cho tất cả client về việc cập nhật trạng thái
+                            synchronized (clientOutputs) {
+                                for (PrintWriter clientOut : clientOutputs) {
+                                    clientOut.println("UPDATE_TICKET|" + dept + "|" + ticket.getCode() + "|đang xử lý");
+                                }
+                            }
+                        } else {
+                            updateStatus("Không còn phiếu nào để gọi cho " + dept);
+                        }
+                    } else {
+                        updateStatus("Không còn phiếu nào để gọi cho " + dept);
+                    }
+                    continue;
+                }
+
+                // Xử lý yêu cầu nhắc lại
+                if (line.startsWith("REPEAT_CALL|")) {
+                    String dept = line.substring("REPEAT_CALL|".length());
+                    List<Ticket> tickets = ticketsMap.get(dept);
+                    if (tickets != null && !tickets.isEmpty()) {
+                        // Tìm phiếu đang xử lý để nhắc lại
+                        for (Ticket ticket : tickets) {
+                            if ("đang xử lý".equals(ticket.getStatus())) {
+                                // Lấy số quầy từ Config
+                                String counterNumber = Config.getDepartmentCounter(dept);
+                                
+                                // Gọi AudioCaller để phát âm thanh lại
+                                AudioCaller.playTicketCall(ticket.getCode(), counterNumber);
+                                
+                                updateStatus("Đã nhắc lại phiếu " + ticket.getCode() + " quầy " + counterNumber);
+                                break;
+                            }
+                        }
+                    }
+                    continue;
+                }
+
+                // Xử lý yêu cầu hoàn thành phiếu
+                if (line.startsWith("COMPLETE_TICKET|")) {
+                    String dept = line.substring("COMPLETE_TICKET|".length());
+                    List<Ticket> tickets = ticketsMap.get(dept);
+                    if (tickets != null && !tickets.isEmpty()) {
+                        // Tìm phiếu đang xử lý để đánh dấu hoàn thành
+                        for (Ticket ticket : tickets) {
+                            if ("đang xử lý".equals(ticket.getStatus())) {
+                                // Đổi trạng thái thành "hoàn thành"
+                                ticket.setStatus("hoàn thành");
+                                
+                                updateStatus("Đã hoàn thành phiếu " + ticket.getCode() + " cho " + dept);
+                                
+                                // Thông báo cho tất cả client về việc cập nhật trạng thái
+                                synchronized (clientOutputs) {
+                                    for (PrintWriter clientOut : clientOutputs) {
+                                        clientOut.println("UPDATE_TICKET|" + dept + "|" + ticket.getCode() + "|hoàn thành");
+                                    }
+                                }
+                                break;
+                            }
+                        }
+                    }
+                    continue;
+                }
+
                 // Phản hồi lại client nếu muốn
                 out.println("Server đã nhận: " + line);
             }
@@ -155,6 +274,23 @@ public class ServerUI extends JFrame {
             try {
                 clientSocket.close();
             } catch (IOException ignored) {}
+        }
+    }
+
+    // Phương thức so sánh số phiếu
+    private int compareTicketNumbers(String ticket1, String ticket2) {
+        try {
+            // Lấy phần số từ mã phiếu (bỏ prefix)
+            String num1 = ticket1.replaceAll("\\D", ""); // Loại bỏ ký tự không phải số
+            String num2 = ticket2.replaceAll("\\D", "");
+            
+            int number1 = Integer.parseInt(num1);
+            int number2 = Integer.parseInt(num2);
+            
+            return Integer.compare(number1, number2);
+        } catch (NumberFormatException e) {
+            // Nếu không parse được số, so sánh theo chuỗi
+            return ticket1.compareTo(ticket2);
         }
     }
 
