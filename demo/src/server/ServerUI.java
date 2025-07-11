@@ -3,7 +3,9 @@ import java.awt.*;
 import java.io.*;
 import java.net.*;
 import java.util.*;
-import java.util.List; // Add this line
+import java.util.List;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class ServerUI extends JFrame {
     private JLabel statusLabel;
@@ -16,6 +18,22 @@ public class ServerUI extends JFrame {
     // Đếm số phiếu đã gọi cho từng bộ phận
     private Map<String, Integer> calledCounter = new HashMap<>();
     private final List<PrintWriter> clientOutputs = Collections.synchronizedList(new ArrayList<>());
+    
+    // Queue để xử lý audio requests tuần tự
+    private final BlockingQueue<AudioRequest> audioQueue = new LinkedBlockingQueue<>();
+    
+    // Class để lưu thông tin audio request
+    private static class AudioRequest {
+        String ticketCode;
+        String counterNumber;
+        String department;
+        
+        AudioRequest(String ticketCode, String counterNumber, String department) {
+            this.ticketCode = ticketCode;
+            this.counterNumber = counterNumber;
+            this.department = department;
+        }
+    }
 
     public ServerUI() {
         setTitle("Phần mềm máy chủ");
@@ -98,6 +116,35 @@ public class ServerUI extends JFrame {
             ticketsMap.put(name, new ArrayList<>());
             ticketCounter.put(name, 0);
             calledCounter.put(name, 0);
+        }
+
+        // Khởi tạo audio processor thread
+        startAudioProcessor();
+    }
+
+    private void startAudioProcessor() {
+        Thread audioProcessor = new Thread(() -> {
+            while (true) {
+                try {
+                    AudioRequest request = audioQueue.take(); // Chờ cho đến khi có request
+                    processAudioRequest(request);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
+        });
+        audioProcessor.setDaemon(true);
+        audioProcessor.start();
+    }
+    
+    private void processAudioRequest(AudioRequest request) {
+        try {
+            updateStatus("Đang phát âm thanh phiếu " + request.ticketCode + " quầy " + request.counterNumber);
+            AudioCaller.playTicketCall(request.ticketCode, request.counterNumber);
+            updateStatus("Đã hoàn thành phát âm thanh phiếu " + request.ticketCode + " quầy " + request.counterNumber);
+        } catch (Exception e) {
+            updateStatus("Lỗi phát âm thanh phiếu " + request.ticketCode + ": " + e.getMessage());
         }
     }
 
@@ -194,10 +241,10 @@ public class ServerUI extends JFrame {
                             // Lấy số quầy từ Config
                             String counterNumber = Config.getDepartmentCounter(dept);
                             
-                            // Gọi AudioCaller để phát âm thanh
-                            AudioCaller.playTicketCall(ticket.getCode(), counterNumber);
+                            // Thêm vào queue thay vì gọi trực tiếp
+                            audioQueue.offer(new AudioRequest(ticket.getCode(), counterNumber, dept));
                             
-                            updateStatus("Đã gọi phiếu " + ticket.getCode() + " quầy " + counterNumber);
+                            updateStatus("Đã thêm yêu cầu phát âm thanh phiếu " + ticket.getCode() + " vào hàng đợi");
                             
                             // Thông báo cho tất cả client về việc cập nhật trạng thái
                             synchronized (clientOutputs) {
@@ -225,10 +272,10 @@ public class ServerUI extends JFrame {
                                 // Lấy số quầy từ Config
                                 String counterNumber = Config.getDepartmentCounter(dept);
                                 
-                                // Gọi AudioCaller để phát âm thanh lại
-                                AudioCaller.playTicketCall(ticket.getCode(), counterNumber);
+                                // Thêm vào queue thay vì gọi trực tiếp
+                                audioQueue.offer(new AudioRequest(ticket.getCode(), counterNumber, dept));
                                 
-                                updateStatus("Đã nhắc lại phiếu " + ticket.getCode() + " quầy " + counterNumber);
+                                updateStatus("Đã thêm yêu cầu nhắc lại phiếu " + ticket.getCode() + " vào hàng đợi");
                                 break;
                             }
                         }

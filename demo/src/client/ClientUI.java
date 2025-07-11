@@ -25,6 +25,44 @@ public class ClientUI extends JFrame {
         setSize(600, 500);
         setLocationRelativeTo(null);
 
+        // Kiểm tra kết nối server trước khi khởi tạo giao diện
+        if (!testServerConnection()) {
+            showConnectionErrorAndExit();
+            return;
+        }
+
+        initializeUI();
+        
+        // Kết nối tới server khi khởi động
+        connectToServer();
+    }
+
+    private boolean testServerConnection() {
+        try {
+            Socket testSocket = new Socket();
+            testSocket.connect(new InetSocketAddress("localhost", 8888), 3000); // Timeout 3 giây
+            testSocket.close();
+            return true;
+        } catch (IOException e) {
+            return false;
+        }
+    }
+
+    private void showConnectionErrorAndExit() {
+        JOptionPane.showMessageDialog(
+            null,
+            "Không thể kết nối tới máy chủ!\n\n" +
+            "Vui lòng kiểm tra:\n" +
+            "• Máy chủ đã được khởi động\n" +
+            "• Kết nối mạng\n" +
+            "Ứng dụng sẽ thoát.",
+            "Lỗi kết nối máy chủ",
+            JOptionPane.ERROR_MESSAGE
+        );
+        System.exit(1);
+    }
+
+    private void initializeUI() {
         mainPanel = new JPanel(new BorderLayout());
         mainPanel.setBackground(new Color(245, 245, 245));
 
@@ -104,9 +142,6 @@ public class ClientUI extends JFrame {
         mainPanel.add(centerPanel, BorderLayout.CENTER);
 
         setContentPane(mainPanel);
-
-        // Kết nối tới server khi khởi động
-        connectToServer();
     }
 
     private void connectToServer() {
@@ -116,6 +151,7 @@ public class ClientUI extends JFrame {
                 in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 out = new PrintWriter(socket.getOutputStream(), true);
                 updateStatus("Đã kết nối tới máy chủ!");
+                
                 String line;
                 while ((line = in.readLine()) != null) {
                     System.out.println("Server: " + line);
@@ -212,9 +248,34 @@ public class ClientUI extends JFrame {
                     }
                 }
             } catch (IOException e) {
-                updateStatus("Không kết nối được tới máy chủ!");
+                SwingUtilities.invokeLater(() -> {
+                    updateStatus("Mất kết nối với máy chủ!");
+                    showReconnectionDialog();
+                });
             }
         }).start();
+    }
+
+    private void showReconnectionDialog() {
+        int option = JOptionPane.showConfirmDialog(
+            this,
+            "Mất kết nối với máy chủ!\n\n" +
+            "Bạn có muốn thử kết nối lại không?",
+            "Mất kết nối",
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.WARNING_MESSAGE
+        );
+        
+        if (option == JOptionPane.YES_OPTION) {
+            // Thử kết nối lại
+            if (testServerConnection()) {
+                connectToServer();
+            } else {
+                showConnectionErrorAndExit();
+            }
+        } else {
+            System.exit(0);
+        }
     }
 
     public void updateStatus(String message) {
