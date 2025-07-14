@@ -31,8 +31,6 @@ public class AudioCaller {
     }
     
     public static void main(String[] args) {
-        String number = "1001";
-        String counter = "9";
-        playTicketCall(number, counter);
+        playTicketCall("1001", "9");
     }
 }

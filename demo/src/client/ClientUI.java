@@ -40,7 +40,7 @@ public class ClientUI extends JFrame {
     private boolean testServerConnection() {
         try {
             Socket testSocket = new Socket();
-            testSocket.connect(new InetSocketAddress("trgc", 8888), 3000); // Timeout 3 giây
+            testSocket.connect(new InetSocketAddress("localhost", 8888), 3000); // Timeout 3 giây
             testSocket.close();
             return true;
         } catch (IOException e) {
