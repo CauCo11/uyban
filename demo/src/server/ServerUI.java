@@ -82,6 +82,16 @@ public class ServerUI extends JFrame {
                 Ticket ticket = new Ticket(ticketCode, "chờ xử lý");
                 ticketsMap.get(name).add(ticket);
                 updateStatus("Đã thêm phiếu " + ticketCode + " vào " + name);
+                
+                // In phiếu ngay khi tạo số mới
+                try {
+                    String serviceName = mapDepartmentToService(name);
+                    AudioCaller.printTicket(ticketCode, serviceName);
+                    updateStatus("Đã in phiếu " + ticketCode + " cho " + name);
+                } catch (Exception ex) {
+                    updateStatus("Lỗi khi in phiếu " + ticketCode + ": " + ex.getMessage());
+                }
+                
                 // Gửi cho tất cả client
                 synchronized (clientOutputs) {
                     for (PrintWriter out : clientOutputs) {
@@ -338,6 +348,36 @@ public class ServerUI extends JFrame {
         } catch (NumberFormatException e) {
             // Nếu không parse được số, so sánh theo chuỗi
             return ticket1.compareTo(ticket2);
+        }
+    }
+
+    // Ánh xạ tên bộ phận sang tên dịch vụ cho phiếu
+    private String mapDepartmentToService(String departmentName) {
+        switch (departmentName) {
+            case "Tài chính":
+                return "TÀI CHÍNH - KẾ TOÁN";
+            case "Bất động sản":
+                return "BẤT ĐỘNG SẢN - ĐẤT ĐAI";
+            case "Giáo dục":
+                return "GIÁO DỤC - ĐÀO TẠO";
+            case "Y tế":
+                return "Y TẾ - CHĂM SÓC SỨC KHỎE";
+            case "Lao động":
+                return "LAO ĐỘNG - VIỆC LÀM";
+            case "Tư pháp":
+                return "TƯ PHÁP - HỘ TỊCH; NỘI VỤ";
+            case "Văn hóa":
+                return "VĂN HÓA - THỂ THAO";
+            case "Giao thông":
+                return "GIAO THÔNG - VẬN TẢI";
+            case "Môi trường":
+                return "MÔI TRƯỜNG - TÀI NGUYÊN";
+            case "Kế hoạch":
+                return "KẾ HOẠCH - ĐẦU TƯ";
+            case "Xây dựng":
+                return "XÂY DỰNG - QUY HOẠCH";
+            default:
+                return "DỊCH VỤ HÀNH CHÍNH";
         }
     }
 
