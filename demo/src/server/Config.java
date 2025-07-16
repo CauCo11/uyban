@@ -14,7 +14,7 @@ public class Config {
     
     public static final List<Department> DEPARTMENT_LIST = Arrays.asList(
         new Department("Tài chính", "1"),
-        new Department("Bất động sản", "2"),
+        new Department("Tư pháp dân tộc tôn giáo", "2"),
         new Department("Giáo dục", "3"),
         new Department("Y tế", "4"),
         new Department("Lao động", "5"),
@@ -28,7 +28,7 @@ public class Config {
     
     // For backward compatibility
     public static final List<String> DEPARTMENTS = Arrays.asList(
-        "Tài chính", "Bất động sản", "Giáo dục", "Y tế", "Lao động",
+        "Tài chính", "Tư pháp dân tộc tôn giáo", "Giáo dục", "Y tế", "Lao động",
         "Tư pháp", "Văn hóa", "Giao thông", "Môi trường", "Kế hoạch", "Xây dựng"
     );
     

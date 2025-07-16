@@ -38,7 +38,8 @@ public class ServerUI extends JFrame {
     public ServerUI() {
         setTitle("Phần mềm máy chủ");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(600, 500);
+        setExtendedState(JFrame.MAXIMIZED_BOTH); // Full màn hình
+        setUndecorated(true); // Ẩn thanh title
         setLocationRelativeTo(null);
 
         // Panel chính
@@ -356,8 +357,8 @@ public class ServerUI extends JFrame {
         switch (departmentName) {
             case "Tài chính":
                 return "TÀI CHÍNH - KẾ TOÁN";
-            case "Bất động sản":
-                return "BẤT ĐỘNG SẢN - ĐẤT ĐAI";
+            case "Tư pháp dân tộc tôn giáo":
+                return "Tư pháp dân tộc tôn giáo - ĐẤT ĐAI";
             case "Giáo dục":
                 return "GIÁO DỤC - ĐÀO TẠO";
             case "Y tế":
