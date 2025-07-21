@@ -6,8 +6,8 @@ import sys
 from datetime import datetime
 
 def create_ticket_image(queue_number: str, service: str = "TƯ PHÁP - HỘ TỊCH; NỘI VỤ", font_path="arial.ttf", font_size=24) -> Image.Image:
-    # Tạo ảnh trắng với kích thước lớn hơn và rộng hơn về bên phải
-    width, height = 500, 600  # Tăng từ 384x500 lên 500x600
+    # Tăng chiều cao để chứa đủ thời gian lấy phiếu
+    width, height = 500, 700  # Tăng từ 600 lên 700
     img = Image.new("RGB", (width, height), "white")
     draw = ImageDraw.Draw(img)
 
@@ -21,12 +21,51 @@ def create_ticket_image(queue_number: str, service: str = "TƯ PHÁP - HỘ TỊ
         font_large = ImageFont.load_default()
         font_header = ImageFont.load_default()
 
+    # Hàm vẽ text nhiều dòng với xuống dòng tự động
+    def draw_multiline_text(draw, text, position, font, fill="black", max_width=400, line_height=35):
+        x, y = position
+        words = text.split()
+        lines = []
+        current_line = []
+        
+        for word in words:
+            test_line = ' '.join(current_line + [word])
+            try:
+                text_width = draw.textbbox((0, 0), test_line, font=font)[2]
+            except:
+                text_width = len(test_line) * font_size // 2
+                
+            if text_width <= max_width:
+                current_line.append(word)
+            else:
+                if current_line:
+                    lines.append(' '.join(current_line))
+                    current_line = [word]
+                else:
+                    lines.append(word)
+        
+        if current_line:
+            lines.append(' '.join(current_line))
+        
+        # Vẽ từng dòng và căn giữa
+        for i, line in enumerate(lines):
+            try:
+                line_width = draw.textbbox((0, 0), line, font=font)[2]
+            except:
+                line_width = len(line) * font_size // 2
+            
+            line_x = (width - line_width) // 2
+            line_y = y + i * line_height
+            draw.text((line_x, line_y), line, fill=fill, font=font)
+        
+        return y + len(lines) * line_height
+
     # Vẽ border ngoài (khung chấm) - lớn hơn
     y_pos = 40  # Tăng margin top
     
     # Vẽ khung viền chấm - to hơn và rộng hơn
     border_width = 440  # Tăng từ 340 lên 440
-    border_height = 520  # Tăng từ 420 lên 520
+    border_height = 620  # Tăng từ 580 lên 620 để chứa thêm thời gian lấy phiếu
     x_start = (width - border_width) // 2
     
     # Vẽ border trên và dưới - chấm to hơn
@@ -71,33 +110,27 @@ def create_ticket_image(queue_number: str, service: str = "TƯ PHÁP - HỘ TỊ
     draw.text(((width - number_w) // 2, y_pos), queue_number, fill="black", font=font_large)
     y_pos += 100  # Tăng spacing
     
-    # Tên dịch vụ - căn giữa trên 1 dòng duy nhất
-    try:
-        service_w = draw.textbbox((0, 0), service, font=font_normal)[2]
-    except:
-        service_w = len(service) * font_size // 2
-    
-    draw.text(((width - service_w) // 2, y_pos), service, fill="black", font=font_normal)
-    y_pos += 40  # Tăng spacing
-    
+    # Tên dịch vụ - cho phép xuống dòng tự động
+    y_pos = draw_multiline_text(draw, service, (0, y_pos), font_normal, max_width=border_width - 80)
     y_pos += 25  # Extra spacing
     
     # Đường kẻ ngang - dày hơn
     draw.line([x_start + 40, y_pos, x_start + border_width - 40, y_pos], fill="black", width=2)
     y_pos += 45
     
-    # Thời gian - căn giữa
-    time_str = datetime.now().strftime('%H:%M Th %w, %d thg %m, %Y')
-    try:
-        time_w = draw.textbbox((0, 0), time_str, font=font_normal)[2]
-    except:
-        time_w = len(time_str) * font_size // 2
+    # Chỉ hiển thị thời gian lấy phiếu chi tiết (có giây)
+    time_taken = datetime.now().strftime('%H:%M:%S - %d/%m/%Y')
     
-    draw.text(((width - time_w) // 2, y_pos), time_str, fill="black", font=font_normal)
+    try:
+        taken_w = draw.textbbox((0, 0), time_taken, font=font_normal)[2]
+    except:
+        taken_w = len(time_taken) * font_size // 2
+    
+    draw.text(((width - taken_w) // 2, y_pos), time_taken, fill="black", font=font_normal)
 
     return img
 
-def print_image_to_printer(img: Image.Image, printer_name="POS-80C"):
+def print_image_to_printer(img: Image.Image, printer_name="80mm Series Printer"):
     try:
         hPrinter = win32print.OpenPrinter(printer_name)
         hDC = win32ui.CreateDC()
@@ -128,6 +161,14 @@ if __name__ == "__main__":
     
     # Tạo ảnh phiếu
     image = create_ticket_image(queue_number, service)
+    
+    # # Lưu ảnh để debug
+    # debug_filename = f"debug_ticket_{queue_number}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.png"
+    # try:
+    #     image.save(debug_filename)
+    #     print(f"💾 Đã lưu ảnh debug: {debug_filename}")
+    # except Exception as e:
+    #     print(f"⚠️ Không thể lưu ảnh debug: {e}")
     
     # In ra máy in trực tiếp
     if print_image_to_printer(image):

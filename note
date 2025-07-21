@@ -1,1 +1,2 @@
 pyinstaller --onefile play_audio.py
+pyinstaller --onefile in_phieu.py
