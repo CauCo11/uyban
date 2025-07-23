@@ -90,7 +90,7 @@ public class ServerUI extends JFrame {
                 // Tối màu nút và vô hiệu hóa ngay khi nhấn
                 btn.setBackground(new Color(60, 80, 150));
                 btn.setEnabled(false);
-                updateStatus("Đang xử lý...");
+                // updateStatus("Đang xử lý...");
                 
                 // Thực hiện tất cả thao tác trong thread riêng
                 new Thread(() -> {
@@ -103,15 +103,15 @@ public class ServerUI extends JFrame {
                         // Khi tạo mới, trạng thái là "chờ xử lý"
                         Ticket ticket = new Ticket(ticketCode, "chờ xử lý");
                         ticketsMap.get(name).add(ticket);
-                        updateStatus("Đã thêm phiếu " + ticketCode + " vào " + name);
+                        // updateStatus("Đã thêm phiếu " + ticketCode + " vào " + name);
                         
                         // In phiếu ngay khi tạo số mới
                         try {
                             String serviceName = mapDepartmentToService(name);
                             AudioCaller.printTicket(ticketCode, serviceName);
-                            updateStatus("Đã in phiếu " + ticketCode + " cho " + name);
+                            // updateStatus("Đã in phiếu " + ticketCode + " cho " + name);
                         } catch (Exception ex) {
-                            updateStatus("Lỗi khi in phiếu " + ticketCode + ": " + ex.getMessage());
+                            // updateStatus("Lỗi khi in phiếu " + ticketCode + ": " + ex.getMessage());
                         }
                         
                         // Gửi cho tất cả client
@@ -120,14 +120,14 @@ public class ServerUI extends JFrame {
                                 out.println("NEW_TICKET|" + name + "|" + ticketCode + "|chờ xử lý");
                             }
                         }
-                        updateStatus("Đã gửi thông tin về client");
+                        // updateStatus("Đã gửi thông tin về client");
                         
                     } finally {
                         // Sau khi hoàn thành tất cả, sáng lại nút
                         SwingUtilities.invokeLater(() -> {
                             btn.setBackground(new Color(100, 140, 255)); // Màu gốc
                             btn.setEnabled(true);
-                            updateStatus("Sẵn sàng");
+                            // updateStatus("Sẵn sàng");
                         });
                     }
                 }).start();
@@ -183,11 +183,11 @@ public class ServerUI extends JFrame {
     
     private void processAudioRequest(AudioRequest request) {
         try {
-            updateStatus("Đang phát âm thanh phiếu " + request.ticketCode + " quầy " + request.counterNumber);
+            // updateStatus("Đang phát âm thanh phiếu " + request.ticketCode + " quầy " + request.counterNumber);
             AudioCaller.playTicketCall(request.ticketCode, request.counterNumber);
-            updateStatus("Đã hoàn thành phát âm thanh phiếu " + request.ticketCode + " quầy " + request.counterNumber);
+            // updateStatus("Đã hoàn thành phát âm thanh phiếu " + request.ticketCode + " quầy " + request.counterNumber);
         } catch (Exception e) {
-            updateStatus("Lỗi phát âm thanh phiếu " + request.ticketCode + ": " + e.getMessage());
+            // updateStatus("Lỗi phát âm thanh phiếu " + request.ticketCode + ": " + e.getMessage());
         }
     }
 
@@ -198,15 +198,15 @@ public class ServerUI extends JFrame {
     public void startServer() {
         try {
             serverSocket = new ServerSocket(8888); // Chọn port phù hợp
-            updateStatus("Máy chủ đang chạy trên cổng 8888...");
+            // updateStatus("Máy chủ đang chạy trên cổng 8888...");
             while (true) {
                 Socket clientSocket = serverSocket.accept();
-                updateStatus("Có máy mới kết nối: " + clientSocket.getInetAddress());
+                // updateStatus("Có máy mới kết nối: " + clientSocket.getInetAddress());
                 // Xử lý mỗi client ở thread riêng
                 new Thread(() -> handleClient(clientSocket)).start();
             }
         } catch (IOException e) {
-            updateStatus("Lỗi server: " + e.getMessage());
+            // updateStatus("Lỗi server: " + e.getMessage());
         }
     }
 
@@ -287,7 +287,7 @@ public class ServerUI extends JFrame {
                             // Thêm vào queue thay vì gọi trực tiếp
                             audioQueue.offer(new AudioRequest(ticket.getCode(), counterNumber, dept));
                             
-                            updateStatus("Đã thêm yêu cầu phát âm thanh phiếu " + ticket.getCode() + " vào hàng đợi");
+                            // updateStatus("Đã thêm yêu cầu phát âm thanh phiếu " + ticket.getCode() + " vào hàng đợi");
                             
                             // Thông báo cho tất cả client về việc cập nhật trạng thái
                             synchronized (clientOutputs) {
@@ -318,7 +318,7 @@ public class ServerUI extends JFrame {
                                 // Thêm vào queue thay vì gọi trực tiếp
                                 audioQueue.offer(new AudioRequest(ticket.getCode(), counterNumber, dept));
                                 
-                                updateStatus("Đã thêm yêu cầu nhắc lại phiếu " + ticket.getCode() + " vào hàng đợi");
+                                // updateStatus("Đã thêm yêu cầu nhắc lại phiếu " + ticket.getCode() + " vào hàng đợi");
                                 break;
                             }
                         }
@@ -337,7 +337,7 @@ public class ServerUI extends JFrame {
                                 // Đổi trạng thái thành "hoàn thành"
                                 ticket.setStatus("hoàn thành");
                                 
-                                updateStatus("Đã hoàn thành phiếu " + ticket.getCode() + " cho " + dept);
+                                // updateStatus("Đã hoàn thành phiếu " + ticket.getCode() + " cho " + dept);
                                 
                                 // Thông báo cho tất cả client về việc cập nhật trạng thái
                                 synchronized (clientOutputs) {
@@ -389,14 +389,14 @@ public class ServerUI extends JFrame {
         switch (departmentName) {
             case "Tư pháp - Hộ tịch, Thanh tra":
                 return "TƯ PHÁP - HỘ TỊCH, THANH TRA";
-            case "Nội Vụ - Y Tế - Giáo Dục và Đào Tạo":
+            case "Kiểm soát thủ tục hành chính":
                 return "KIỂM SOÁT THỦ TỤC HÀNH CHÍNH";
             case "Dân Tộc - Tôn Giáo - Thi Đua Khen Thưởng - Văn Hóa - Khoa Học và Thông Tin":
                 return "NỘI VỤ, Y TẾ, VĂN HÓA - XÃ HỘI, KHOA HỌC - CÔNG NGHỆ, GIÁO DỤC - ĐÀO TẠO, TÔN GIÁO";
-            case "Xây Dựng":
-                return "XÂY DỰNG";
             case "Nông Nghiệp và Môi Trường":
                 return "NÔNG NGHIỆP MÔI TRƯỜNG";
+            case "Xây Dựng":
+                return "XÂY DỰNG";
             case "Công thương, Tài chính":
                 return "CÔNG THƯƠNG, TÀI CHÍNH";
             default:

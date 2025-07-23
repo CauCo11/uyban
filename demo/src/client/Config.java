@@ -1,3 +1,6 @@
+// NẾNH
+package client;
+
 import java.util.Arrays;
 import java.util.List;
 
@@ -13,23 +16,17 @@ public class Config {
     }
     
     public static final List<Department> DEPARTMENT_LIST = Arrays.asList(
-        new Department("Tài chính", "1"),
-        new Department("Tư pháp dân tộc tôn giáo", "2"),
-        new Department("Giáo dục", "3"),
-        new Department("Y tế", "4"),
-        new Department("Lao động", "5"),
-        new Department("Tư pháp", "6"),
-        new Department("Văn hóa", "7"),
-        new Department("Giao thông", "8"),
-        new Department("Môi trường", "9"),
-        new Department("Kế hoạch", "10"),
-        new Department("Xây dựng", "11")
+        new Department("Tư pháp - Hộ tịch, Thanh tra", "1"),
+        new Department("Kiểm soát thủ tục hành chính", "2"),
+        new Department("Nội vụ, Y tế, Văn hóa - Xã hội, Khoa học - Công nghệ, Giáo dục - Đào tạo, Tôn giáo", "3"),
+        new Department("Đất đai, Nông nghiệp, Môi trường", "4"),
+        new Department("Xây dựng", "5"),
+        new Department("Công thương, Tài chính", "6")
     );
     
     // For backward compatibility
     public static final List<String> DEPARTMENTS = Arrays.asList(
-        "Tài chính", "Tư pháp dân tộc tôn giáo", "Giáo dục", "Y tế", "Lao động",
-        "Tư pháp", "Văn hóa", "Giao thông", "Môi trường", "Kế hoạch", "Xây dựng"
+        "Tư pháp - Hộ tịch, Thanh tra", "Kiểm soát thủ tục hành chính", "Nội vụ, Y tế, Văn hóa - Xã hội, Khoa học - Công nghệ, Giáo dục - Đào tạo, Tôn giáo", "Đất đai, Nông nghiệp, Môi trường", "Xây dựng", "Công thương, Tài chính"
     );
     
     public static String getDepartmentCounter(String departmentName) {

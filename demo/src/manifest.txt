@@ -1,0 +1,2 @@
+Main-Class: ClientUI
+Class-Path: .

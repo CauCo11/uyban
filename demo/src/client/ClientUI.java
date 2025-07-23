@@ -1,3 +1,5 @@
+package client;
+
 import javax.swing.*;
 import java.awt.*;
 import java.io.*;
@@ -21,9 +23,11 @@ public class ClientUI extends JFrame {
     private TicketPanel currentTicketPanel = null;
 
     public ClientUI() {
-        setTitle("Phần mềm máy khách");
+        setTitle("TRUNG TÂM PHỤC VỤ HÀNH CHÍNH CÔNG");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(600, 500);
+        // setExtendedState(JFrame.MAXIMIZED_BOTH);
+        // setUndecorated(true);
+        setSize(900, 700); // hoặc kích thước bạn muốn
         setLocationRelativeTo(null);
 
         // Kiểm tra kết nối server trước khi khởi tạo giao diện
@@ -33,15 +37,14 @@ public class ClientUI extends JFrame {
         }
 
         initializeUI();
-        
-        // Kết nối tới server khi khởi động
         connectToServer();
     }
 
     private boolean testServerConnection() {
         try {
             Socket testSocket = new Socket();
-            testSocket.connect(new InetSocketAddress("localhost", 8888), 3000); // Timeout 3 giây
+            // testSocket.connect(new InetSocketAddress("localhost", 8888), 3000);
+            testSocket.connect(new InetSocketAddress("10.83.198.168", 8888), 3000);
             testSocket.close();
             return true;
         } catch (IOException e) {
@@ -67,17 +70,13 @@ public class ClientUI extends JFrame {
         mainPanel = new JPanel(new BorderLayout());
         mainPanel.setBackground(new Color(245, 245, 245));
 
-        // Status label giống server
-        statusLabel = new JLabel(" ", SwingConstants.LEFT);
-        statusLabel.setFont(new Font("Arial", Font.PLAIN, 14));
-        statusLabel.setForeground(Color.GRAY);
-
-        JLabel title = new JLabel("Ủy ban nhân dân phường Nếnh", SwingConstants.CENTER);
-        title.setFont(new Font("Arial", Font.BOLD, 28));
+        // Tiêu đề lớn giống server
+        JLabel title = new JLabel("TRUNG TÂM PHỤC VỤ HÀNH CHÍNH CÔNG", SwingConstants.CENTER);
+        title.setFont(new Font("Arial", Font.BOLD, 39));
         title.setForeground(Color.RED);
 
-        JLabel subtitle = new JLabel("Hãy chọn bộ phận làm việc.", SwingConstants.CENTER);
-        subtitle.setFont(new Font("Arial", Font.PLAIN, 18));
+        JLabel subtitle = new JLabel("Chọn để làm việc.", SwingConstants.CENTER);
+        subtitle.setFont(new Font("Arial", Font.PLAIN, 29));
         subtitle.setForeground(Color.BLACK);
 
         JPanel titlePanel = new JPanel(new GridLayout(2, 1));
@@ -86,33 +85,55 @@ public class ClientUI extends JFrame {
         titlePanel.add(subtitle);
 
         int n = Config.DEPARTMENTS.size();
-        int cols = 3;
-        int rows = (int) Math.ceil(n / (double) cols);
-        JPanel gridPanel = new JPanel(new GridBagLayout());
+        int row = (int) Math.ceil(n / 3.0);
+        JPanel gridPanel = new JPanel(new GridLayout(row, 3, 16, 16));
         gridPanel.setBackground(Color.WHITE);
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(8, 8, 8, 8);
-        gbc.fill = GridBagConstraints.BOTH;
 
         // Khởi tạo map cho từng bộ phận
         for (String name : Config.DEPARTMENTS) {
             ticketsMap.put(name, new ArrayList<>());
         }
 
-        for (int i = 0; i < n; i++) {
-            JButton btn = new JButton(Config.DEPARTMENTS.get(i));
-            btn.setFont(new Font("Arial", Font.PLAIN, 22));
+        for (String name : Config.DEPARTMENTS) {
+            String counterNumber = Config.getDepartmentCounter(name);
+            String buttonText = "<html><div style='text-align: center;'>" +
+                    "<div style='font-size: 16px; color: #FFD700;'>Số Quầy: " + counterNumber + "</div>" +
+                    "<div style='margin-top: 8px;'>" + name.replace("/", "<br>") + "</div>" +
+                    "</div></html>";
+
+            JButton btn = new JButton(buttonText);
+            btn.setFont(new Font("Arial", Font.BOLD, 31));
             btn.setBackground(new Color(100, 140, 255));
-            btn.setForeground(Color.BLACK);
+            btn.setForeground(Color.WHITE);
+            btn.setVerticalAlignment(SwingConstants.CENTER);
+            btn.setHorizontalAlignment(SwingConstants.CENTER);
+
+            btn.addMouseListener(new java.awt.event.MouseAdapter() {
+                public void mouseEntered(java.awt.event.MouseEvent evt) {
+                    btn.setBackground(new Color(80, 120, 235));
+                }
+                public void mouseExited(java.awt.event.MouseEvent evt) {
+                    btn.setBackground(new Color(100, 140, 255));
+                }
+                public void mousePressed(java.awt.event.MouseEvent evt) {
+                    btn.setBackground(new Color(60, 100, 215));
+                }
+                public void mouseReleased(java.awt.event.MouseEvent evt) {
+                    btn.setBackground(new Color(80, 120, 235));
+                }
+            });
 
             btn.addActionListener(e -> {
-                currentDepartment = btn.getText();
+                currentDepartment = name;
                 currentTicketPanel = new TicketPanel(currentDepartment, this);
-                
-                // Mở màn hình trắng full màn hình thứ 2
-                showTicketDisplayWindow(currentDepartment);
-                
-                // Gửi yêu cầu lấy danh sách phiếu cho bộ phận này
+
+                // Chỉ mở màn hình hiển thị nếu có 2 màn hình
+                GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+                GraphicsDevice[] screens = ge.getScreenDevices();
+                if (screens.length > 1) {
+                    showTicketDisplayWindow(currentDepartment);
+                }
+
                 if (out != null) {
                     out.println("GET_TICKETS|" + currentDepartment);
                 }
@@ -121,21 +142,13 @@ public class ClientUI extends JFrame {
                 repaint();
             });
 
-            int row = i / cols;
-            int col = i % cols;
-
-            if (row == rows - 1 && n % cols != 0) {
-                int empty = cols - (n % cols);
-                gbc.gridx = col + empty / 2;
-            } else {
-                gbc.gridx = col;
-            }
-            gbc.gridy = row;
-            gbc.weightx = 1.0;
-            gbc.weighty = 1.0;
-            gridPanel.add(btn, gbc);
+            gridPanel.add(btn);
         }
         gridPanel.setBorder(BorderFactory.createEmptyBorder(16, 16, 16, 16));
+
+        statusLabel = new JLabel(" ", SwingConstants.LEFT);
+        statusLabel.setFont(new Font("Arial", Font.PLAIN, 25));
+        statusLabel.setForeground(Color.GRAY);
 
         JPanel centerPanel = new JPanel(new BorderLayout());
         centerPanel.setBackground(Color.WHITE);
@@ -152,7 +165,8 @@ public class ClientUI extends JFrame {
     private void connectToServer() {
         new Thread(() -> {
             try {
-                socket = new Socket("localhost", 8888);
+                // socket = new Socket("localhost", 8888);
+                socket = new Socket("10.83.198.168", 8888);
                 in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 out = new PrintWriter(socket.getOutputStream(), true);
                 updateStatus("Đã kết nối tới máy chủ!");
@@ -411,3 +425,4 @@ public class ClientUI extends JFrame {
         });
     }
 }
+

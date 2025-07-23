@@ -32,8 +32,8 @@ echo ✅ Đã dọn dẹp!
 REM Kiểm tra structure
 echo.
 echo [Bước 3] 📁 Kiểm tra cấu trúc thư mục...
-if not exist "src\client\client" (
-    echo ❌ Không tìm thấy thư mục src\client\client
+if not exist "src\client" (
+    echo ❌ Không tìm thấy thư mục src\client
     pause
     exit /b 1
 )
@@ -48,7 +48,7 @@ REM Compile tất cả
 echo.
 echo [Bước 4] 🔨 Biên dịch mã nguồn Java...
 echo    - Biên dịch client files...
-javac -d . src\client\client\*.java
+javac -d . src\client\*.java
 if %errorlevel% neq 0 (
     echo ❌ Biên dịch client thất bại!
     pause
