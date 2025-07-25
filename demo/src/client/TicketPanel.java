@@ -93,25 +93,17 @@ public class TicketPanel extends JPanel {
     }
 
     private void handleErrorCorrection() {
-        System.out.println("Debug - handleErrorCorrection được gọi từ TicketPanel");
-        
         GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
         GraphicsDevice[] screens = ge.getScreenDevices();
         
-        System.out.println("Debug - Số màn hình: " + screens.length);
-        
         if (screens.length < 2) {
             parent.updateStatus("Chỉ có một màn hình, không thể thực hiện sửa lỗi");
-            System.out.println("Debug - Chỉ có một màn hình");
             return;
         }
         
         // Lấy bounds của màn hình 1 và màn hình 2
         Rectangle screen1Bounds = screens[0].getDefaultConfiguration().getBounds();
         Rectangle screen2Bounds = screens[1].getDefaultConfiguration().getBounds();
-        
-        System.out.println("Debug - Màn hình 1: " + screen1Bounds);
-        System.out.println("Debug - Màn hình 2: " + screen2Bounds);
         
         // Xử lý di chuyển tất cả cửa sổ từ màn hình 2 về màn hình 1
         processWindowMovementToScreen1(screen1Bounds, screen2Bounds);
@@ -122,13 +114,10 @@ public class TicketPanel extends JPanel {
         Window[] allWindows = Window.getWindows();
         int movedCount = 0;
         
-        System.out.println("Debug - Tổng số cửa sổ Swing tìm thấy: " + allWindows.length);
-        
         // Di chuyển các cửa sổ Swing NHƯNG bỏ qua TicketDisplayWindow
         for (Window window : allWindows) {
             if (window.isShowing() && window != parent && !isTicketDisplayWindow(window)) {
                 Rectangle windowBounds = window.getBounds();
-                System.out.println("Debug - Kiểm tra cửa sổ Swing: " + window.getClass().getSimpleName() + " tại " + windowBounds);
                 
                 // Kiểm tra xem cửa sổ có nằm trên màn hình 2 không
                 boolean isOnScreen2 = (windowBounds.x >= screen2Bounds.x && 
@@ -145,9 +134,6 @@ public class TicketPanel extends JPanel {
         // Sử dụng native methods để di chuyển các ứng dụng khác
         moveNativeWindowsToScreen1(screen1Bounds, screen2Bounds);
         
-        // KHÔNG XỬ LÝ TicketDisplayWindow - để yên hoàn toàn
-        
-        System.out.println("Debug - Đã di chuyển " + movedCount + " cửa sổ Swing (bỏ qua TicketDisplayWindow)");
         parent.updateStatus("Đã sửa lỗi: di chuyển ứng dụng về màn hình 1 (không can thiệp màn hình hiển thị)");
     }
 
@@ -170,8 +156,6 @@ public class TicketPanel extends JPanel {
     }
 
     private void moveWindowToScreen1(Window window, Rectangle windowBounds, Rectangle screen1Bounds, Rectangle screen2Bounds) {
-        System.out.println("Debug - Di chuyển cửa sổ từ màn hình 2 về màn hình 1");
-        
         // Tính toán vị trí mới trên màn hình 1
         int relativeX, relativeY;
         
@@ -197,16 +181,11 @@ public class TicketPanel extends JPanel {
         newX = Math.max(screen1Bounds.x, Math.min(newX, screen1Bounds.x + screen1Bounds.width - 100));
         newY = Math.max(screen1Bounds.y, Math.min(newY, screen1Bounds.y + screen1Bounds.height - 100));
         
-        System.out.println("Debug - Vị trí mới: " + newX + ", " + newY);
         window.setLocation(newX, newY);
         window.toFront();
-        
-        System.out.println("Debug - Đã di chuyển cửa sổ: " + window.getClass().getSimpleName());
     }
 
     private void moveNativeWindowsToScreen1(Rectangle screen1Bounds, Rectangle screen2Bounds) {
-        System.out.println("Debug - Đang thực hiện di chuyển các ứng dụng native...");
-        
         JDialog progressDialog = new JDialog((JFrame) parent, "Đang di chuyển ứng dụng", false);
         progressDialog.setSize(400, 150);
         progressDialog.setLocationRelativeTo(parent);
@@ -249,32 +228,11 @@ public class TicketPanel extends JPanel {
             Process process = pb.start();
             int exitCode = process.waitFor();
             
-            System.out.println("Debug - PowerShell script completed with exit code: " + exitCode);
-            
-            // Đọc output
-            try (java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.InputStreamReader(process.getInputStream()))) {
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    System.out.println("PowerShell Output: " + line);
-                }
-            }
-            
-            // Đọc error output
-            try (java.io.BufferedReader errorReader = new java.io.BufferedReader(new java.io.InputStreamReader(process.getErrorStream()))) {
-                String line;
-                while ((line = errorReader.readLine()) != null) {
-                    System.out.println("PowerShell Error: " + line);
-                }
-            }
-            
             if (exitCode != 0) {
-                System.out.println("Debug - PowerShell script failed, using Robot fallback");
                 moveWindowsSimpleMethod(screen1Bounds, screen2Bounds);
             }
             
         } catch (Exception e) {
-            System.out.println("Debug - Lỗi khi chạy PowerShell script: " + e.getMessage());
-            e.printStackTrace();
             moveWindowsSimpleMethod(screen1Bounds, screen2Bounds);
         }
     }
@@ -422,8 +380,6 @@ public class TicketPanel extends JPanel {
     }
 
     private void moveWindowsSimpleMethod(Rectangle screen1Bounds, Rectangle screen2Bounds) {
-        System.out.println("Debug - Sử dụng phương pháp đơn giản với Robot");
-        
         try {
             Robot robot = new Robot();
             robot.setAutoDelay(100);
@@ -449,12 +405,10 @@ public class TicketPanel extends JPanel {
                 robot.keyRelease(java.awt.event.KeyEvent.VK_SHIFT);
                 robot.keyRelease(java.awt.event.KeyEvent.VK_WINDOWS);
                 robot.delay(300);
-                
-                System.out.println("Debug - Completed iteration " + (i+1));
             }
             
         } catch (Exception e) {
-            System.out.println("Debug - Lỗi robot fallback: " + e.getMessage());
+            // Error handling without debug output
         }
     }
 

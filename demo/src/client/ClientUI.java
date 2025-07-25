@@ -185,7 +185,6 @@ public class ClientUI extends JFrame {
                 
                 String line;
                 while ((line = in.readLine()) != null) {
-                    System.out.println("Server: " + line);
                     // Nhận phiếu mới từ server
                     if (line.startsWith("NEW_TICKET|")) {
                         String[] parts = line.split("\\|");
@@ -336,18 +335,10 @@ public class ClientUI extends JFrame {
             out.println("CALL_NEXT|" + departmentName);
             updateStatus("Đã gửi yêu cầu gọi tiếp cho " + departmentName);
             
-            // Debug: In ra danh sách phiếu hiện tại
-            System.out.println("Debug - Department: " + departmentName);
             List<String[]> tickets = ticketsMap.get(departmentName);
             if (tickets != null) {
-                // Tạo copy để tránh ConcurrentModificationException
                 List<String[]> ticketsCopy = new ArrayList<>(tickets);
-                System.out.println("Debug - Số phiếu trong map: " + ticketsCopy.size());
-                for (String[] ticket : ticketsCopy) {
-                    System.out.println("Debug - Phiếu: " + ticket[0] + " - Trạng thái: " + ticket[1]);
-                }
                 
-                // Cập nhật màn hình hiển thị khi nhấn "Tiếp"
                 if (ticketDisplayWindow != null && ticketDisplayWindow.isVisible()) {
                     if (!ticketsCopy.isEmpty()) {
                         String ticketToDisplay = null;
@@ -355,7 +346,6 @@ public class ClientUI extends JFrame {
                         for (String[] ticket : ticketsCopy) {
                             if ("Đang phục vụ".equals(ticket[1]) || "Đang xử lý".equals(ticket[1])) {
                                 ticketToDisplay = ticket[0];
-                                System.out.println("Debug - Tìm thấy phiếu đang phục vụ: " + ticketToDisplay);
                                 break;
                             }
                         }
@@ -364,7 +354,6 @@ public class ClientUI extends JFrame {
                             for (String[] ticket : ticketsCopy) {
                                 if ("Chờ".equals(ticket[1])) {
                                     ticketToDisplay = ticket[0];
-                                    System.out.println("Debug - Tìm thấy phiếu chờ: " + ticketToDisplay);
                                     break;
                                 }
                             }
@@ -373,25 +362,15 @@ public class ClientUI extends JFrame {
                         // Nếu vẫn không có, lấy phiếu đầu tiên
                         if (ticketToDisplay == null && !ticketsCopy.isEmpty()) {
                             ticketToDisplay = ticketsCopy.get(0)[0];
-                            System.out.println("Debug - Lấy phiếu đầu tiên: " + ticketToDisplay);
                         }
                         
                         // Hiển thị số phiếu
                         if (ticketToDisplay != null) {
-                            System.out.println("Debug - Hiển thị số: " + ticketToDisplay);
                             final String finalTicket = ticketToDisplay;
                             SwingUtilities.invokeLater(() -> ticketDisplayWindow.updateTicketNumber(finalTicket));
-                        } else {
-                            System.out.println("Debug - Không có phiếu nào để hiển thị");
                         }
-                    } else {
-                        System.out.println("Debug - Danh sách phiếu trống");
                     }
-                } else {
-                    System.out.println("Debug - Cửa sổ hiển thị không tồn tại hoặc không hiển thị");
                 }
-            } else {
-                System.out.println("Debug - Tickets map null cho department: " + departmentName);
             }
         }
     }

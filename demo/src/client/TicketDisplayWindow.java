@@ -78,7 +78,6 @@ public class TicketDisplayWindow extends JFrame {
     }
     
     public void updateTicketNumber(String ticketNumber) {
-        System.out.println("Debug - updateTicketNumber called with: " + ticketNumber);
         digitPanel.removeAll();
         
         if (ticketNumber != null && !ticketNumber.isEmpty()) {
@@ -95,10 +94,7 @@ public class TicketDisplayWindow extends JFrame {
                     digitLabel.setPreferredSize(new Dimension(100, 150));
                     digitPanel.add(digitLabel);
                 }
-                
-                System.out.println("Debug - Displayed number: " + ticketNumber);
             } catch (Exception e) {
-                System.out.println("Debug - Error displaying number: " + e.getMessage());
                 // Nếu có lỗi, hiển thị 000
                 for (int i = 0; i < 3; i++) {
                     JLabel digitLabel = new JLabel("0");
@@ -113,7 +109,6 @@ public class TicketDisplayWindow extends JFrame {
                 }
             }
         } else {
-            System.out.println("Debug - Empty or null ticket number");
             // Hiển thị 000 khi không có số
             for (int i = 0; i < 3; i++) {
                 JLabel digitLabel = new JLabel("0");
@@ -146,4 +141,5 @@ public class TicketDisplayWindow extends JFrame {
         departmentLabel.setText(departmentName != null ? departmentName : "---");
     }
 }
+
 

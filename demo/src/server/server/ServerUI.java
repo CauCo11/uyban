@@ -90,7 +90,6 @@ public class ServerUI extends JFrame {
                 // Tối màu nút và vô hiệu hóa ngay khi nhấn
                 btn.setBackground(new Color(60, 80, 150));
                 btn.setEnabled(false);
-                // updateStatus("Đang xử lý...");
                 
                 // Thực hiện tất cả thao tác trong thread riêng
                 new Thread(() -> {
@@ -103,15 +102,13 @@ public class ServerUI extends JFrame {
                         // Khi tạo mới, trạng thái là "chờ xử lý"
                         Ticket ticket = new Ticket(ticketCode, "chờ xử lý");
                         ticketsMap.get(name).add(ticket);
-                        // updateStatus("Đã thêm phiếu " + ticketCode + " vào " + name);
                         
                         // In phiếu ngay khi tạo số mới
                         try {
                             String serviceName = mapDepartmentToService(name);
                             AudioCaller.printTicket(ticketCode, serviceName);
-                            // updateStatus("Đã in phiếu " + ticketCode + " cho " + name);
                         } catch (Exception ex) {
-                            // updateStatus("Lỗi khi in phiếu " + ticketCode + ": " + ex.getMessage());
+                            // Silent error handling
                         }
                         
                         // Gửi cho tất cả client
@@ -120,14 +117,12 @@ public class ServerUI extends JFrame {
                                 out.println("NEW_TICKET|" + name + "|" + ticketCode + "|chờ xử lý");
                             }
                         }
-                        // updateStatus("Đã gửi thông tin về client");
                         
                     } finally {
                         // Sau khi hoàn thành tất cả, sáng lại nút
                         SwingUtilities.invokeLater(() -> {
                             btn.setBackground(new Color(100, 140, 255)); // Màu gốc
                             btn.setEnabled(true);
-                            // updateStatus("Sẵn sàng");
                         });
                     }
                 }).start();
@@ -183,11 +178,9 @@ public class ServerUI extends JFrame {
     
     private void processAudioRequest(AudioRequest request) {
         try {
-            // updateStatus("Đang phát âm thanh phiếu " + request.ticketCode + " quầy " + request.counterNumber);
             AudioCaller.playTicketCall(request.ticketCode, request.counterNumber);
-            // updateStatus("Đã hoàn thành phát âm thanh phiếu " + request.ticketCode + " quầy " + request.counterNumber);
         } catch (Exception e) {
-            // updateStatus("Lỗi phát âm thanh phiếu " + request.ticketCode + ": " + e.getMessage());
+            // Silent error handling
         }
     }
 
@@ -198,15 +191,13 @@ public class ServerUI extends JFrame {
     public void startServer() {
         try {
             serverSocket = new ServerSocket(8888); // Chọn port phù hợp
-            // updateStatus("Máy chủ đang chạy trên cổng 8888...");
             while (true) {
                 Socket clientSocket = serverSocket.accept();
-                // updateStatus("Có máy mới kết nối: " + clientSocket.getInetAddress());
                 // Xử lý mỗi client ở thread riêng
                 new Thread(() -> handleClient(clientSocket)).start();
             }
         } catch (IOException e) {
-            // updateStatus("Lỗi server: " + e.getMessage());
+            // Silent error handling
         }
     }
 
@@ -221,7 +212,6 @@ public class ServerUI extends JFrame {
             out.println("Xin chào từ server!");
             String line;
             while ((line = in.readLine()) != null) {
-                System.out.println("Client gửi: " + line);
 
                 // Xử lý yêu cầu lấy danh sách phiếu
                 if (line.startsWith("GET_TICKETS|")) {
@@ -287,19 +277,13 @@ public class ServerUI extends JFrame {
                             // Thêm vào queue thay vì gọi trực tiếp
                             audioQueue.offer(new AudioRequest(ticket.getCode(), counterNumber, dept));
                             
-                            // updateStatus("Đã thêm yêu cầu phát âm thanh phiếu " + ticket.getCode() + " vào hàng đợi");
-                            
                             // Thông báo cho tất cả client về việc cập nhật trạng thái
                             synchronized (clientOutputs) {
                                 for (PrintWriter clientOut : clientOutputs) {
                                     clientOut.println("UPDATE_TICKET|" + dept + "|" + ticket.getCode() + "|đang xử lý");
                                 }
                             }
-                        } else {
-                            updateStatus("Không còn phiếu nào để gọi cho " + dept);
                         }
-                    } else {
-                        updateStatus("Không còn phiếu nào để gọi cho " + dept);
                     }
                     continue;
                 }
@@ -318,7 +302,6 @@ public class ServerUI extends JFrame {
                                 // Thêm vào queue thay vì gọi trực tiếp
                                 audioQueue.offer(new AudioRequest(ticket.getCode(), counterNumber, dept));
                                 
-                                // updateStatus("Đã thêm yêu cầu nhắc lại phiếu " + ticket.getCode() + " vào hàng đợi");
                                 break;
                             }
                         }
@@ -337,8 +320,6 @@ public class ServerUI extends JFrame {
                                 // Đổi trạng thái thành "hoàn thành"
                                 ticket.setStatus("hoàn thành");
                                 
-                                // updateStatus("Đã hoàn thành phiếu " + ticket.getCode() + " cho " + dept);
-                                
                                 // Thông báo cho tất cả client về việc cập nhật trạng thái
                                 synchronized (clientOutputs) {
                                     for (PrintWriter clientOut : clientOutputs) {
@@ -356,7 +337,7 @@ public class ServerUI extends JFrame {
                 out.println("Server đã nhận: " + line);
             }
         } catch (IOException e) {
-            System.out.println("Lỗi client: " + e.getMessage());
+            // Silent error handling
         } finally {
             if (out != null) {
                 clientOutputs.remove(out);
@@ -409,7 +390,6 @@ public class ServerUI extends JFrame {
             ServerUI serverUI = new ServerUI();
             serverUI.setVisible(true);
             new Thread(serverUI::startServer).start();
-            serverUI.updateStatus("Máy chủ đang chạy...");
         });
     }
 }
