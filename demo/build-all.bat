@@ -24,9 +24,11 @@ echo.
 echo [Bước 2] 🧹 Dọn dẹp files cũ...
 if exist client rmdir /s /q client >nul 2>&1
 if exist server rmdir /s /q server >nul 2>&1
+if exist tv rmdir /s /q tv >nul 2>&1
 if exist *.jar del *.jar >nul 2>&1
 if exist ClientApp.exe del ClientApp.exe >nul 2>&1
 if exist ServerApp.exe del ServerApp.exe >nul 2>&1
+if exist TVApp.exe del TVApp.exe >nul 2>&1
 echo ✅ Đã dọn dẹp!
 
 REM Kiểm tra structure
@@ -39,6 +41,11 @@ if not exist "src\client" (
 )
 if not exist "src\server\server" (
     echo ❌ Không tìm thấy thư mục src\server\server
+    pause
+    exit /b 1
+)
+if not exist "src\tv" (
+    echo ❌ Không tìm thấy thư mục src\tv
     pause
     exit /b 1
 )
@@ -62,6 +69,14 @@ if %errorlevel% neq 0 (
     pause
     exit /b 1
 )
+
+echo    - Biên dịch TV app files...
+javac -d . src\tv\*.java
+if %errorlevel% neq 0 (
+    echo ❌ Biên dịch TV app thất bại!
+    pause
+    exit /b 1
+)
 echo ✅ Biên dịch thành công!
 
 REM Tạo JAR files
@@ -82,6 +97,14 @@ if %errorlevel% neq 0 (
     pause
     exit /b 1
 )
+
+echo    - Tạo TVApp.jar...
+jar cfm TVApp.jar manifest-tv.txt tv\*.class
+if %errorlevel% neq 0 (
+    echo ❌ Tạo TVApp.jar thất bại!
+    pause
+    exit /b 1
+)
 echo ✅ Tạo JAR files thành công!
 
 REM Test JAR files
@@ -91,6 +114,8 @@ echo    - Kiểm tra ClientApp.jar...
 java -jar ClientApp.jar --help >nul 2>&1
 echo    - Kiểm tra ServerApp.jar...
 java -jar ServerApp.jar --help >nul 2>&1
+echo    - Kiểm tra TVApp.jar...
+java -jar TVApp.jar --help >nul 2>&1
 echo ✅ JAR files hoạt động tốt!
 
 REM Tìm Launch4j
@@ -142,6 +167,14 @@ if %errorlevel% eq 0 (
     echo ❌ Tạo ServerApp.exe thất bại!
 )
 
+echo    - Tạo TVApp.exe...
+"%LAUNCH4J_PATH%" launch4j-tv-config.xml
+if %errorlevel% eq 0 (
+    echo ✅ TVApp.exe tạo thành công!
+) else (
+    echo ❌ Tạo TVApp.exe thất bại!
+)
+
 :skip_exe
 
 REM Dọn dẹp files class
@@ -149,6 +182,7 @@ echo.
 echo [Bước 9] 🧹 Dọn dẹp files tạm...
 rmdir /s /q client >nul 2>&1
 rmdir /s /q server >nul 2>&1
+rmdir /s /q tv >nul 2>&1
 echo ✅ Đã dọn dẹp!
 
 REM Hiển thị kết quả
@@ -169,12 +203,20 @@ if exist ClientApp.jar (
     echo    ✅ ClientApp.jar          ^(Ứng dụng máy khách^)
     set /a count+=1
 )
+if exist TVApp.jar (
+    echo    ✅ TVApp.jar              ^(Ứng dụng TV hiển thị^)
+    set /a count+=1
+)
 if exist ServerApp.exe (
     echo    ✅ ServerApp.exe          ^(Ứng dụng máy chủ - EXE^)
     set /a count+=1
 )
 if exist ClientApp.exe (
     echo    ✅ ClientApp.exe          ^(Ứng dụng máy khách - EXE^)
+    set /a count+=1
+)
+if exist TVApp.exe (
+    echo    ✅ TVApp.exe              ^(Ứng dụng TV hiển thị - EXE^)
     set /a count+=1
 )
 
@@ -199,6 +241,14 @@ if exist ClientApp.exe (
     echo       • Hoặc: java -jar ClientApp.jar
 ) else (
     echo       • java -jar ClientApp.jar
+)
+echo.
+echo    3. CHẠY TV HIỂN THỊ ^(TÙY CHỌN^):
+if exist TVApp.exe (
+    echo       • Nhấp đúp vào TVApp.exe
+    echo       • Hoặc: java -jar TVApp.jar
+) else (
+    echo       • java -jar TVApp.jar
 )
 echo.
 

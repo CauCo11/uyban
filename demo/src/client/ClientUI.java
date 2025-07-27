@@ -16,7 +16,6 @@ public class ClientUI extends JFrame {
     private PrintWriter out;
     private JPanel mainPanel;
     private TicketDisplayWindow ticketDisplayWindow;
-    private JCheckBox bottomCheckBox; // Add checkbox field
 
     // Lưu danh sách phiếu cho từng bộ phận
     private final Map<String, List<String[]>> ticketsMap = new ConcurrentHashMap<>();
@@ -160,17 +159,6 @@ public class ClientUI extends JFrame {
         mainPanel.add(statusLabel, BorderLayout.NORTH);
         mainPanel.add(centerPanel, BorderLayout.CENTER);
 
-        // Add checkbox at bottom-left
-        bottomCheckBox = new JCheckBox("TV");
-        bottomCheckBox.setFont(new Font("Arial", Font.PLAIN, 14));
-        bottomCheckBox.setBackground(new Color(245, 245, 245));
-        
-        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        bottomPanel.setBackground(new Color(245, 245, 245));
-        bottomPanel.add(bottomCheckBox);
-        
-        mainPanel.add(bottomPanel, BorderLayout.SOUTH);
-
         setContentPane(mainPanel);
     }
 
@@ -198,7 +186,6 @@ public class ClientUI extends JFrame {
                                 SwingUtilities.invokeLater(() -> currentTicketPanel.addTicket(code, status));
                             }
                         }
-                        
                     }
                     // Nhận toàn bộ phiếu từ server
                     if (line.startsWith("ALL_TICKETS|")) {
@@ -416,4 +403,3 @@ public class ClientUI extends JFrame {
         });
     }
 }
-

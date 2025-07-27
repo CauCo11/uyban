@@ -227,6 +227,29 @@ public class ServerUI extends JFrame {
                     continue;
                 }
 
+                // Xử lý yêu cầu lấy phiếu đang phục vụ cho queue display
+                if (line.startsWith("GET_SERVING_TICKETS")) {
+                    StringBuilder sb = new StringBuilder("SERVING_TICKETS");
+                    for (Map.Entry<String, List<Ticket>> entry : ticketsMap.entrySet()) {
+                        String dept = entry.getKey();
+                        List<Ticket> tickets = entry.getValue();
+                        String counterNumber = Config.getDepartmentCounter(dept);
+                        
+                        // Tìm phiếu đang phục vụ
+                        String servingTicket = "----";
+                        for (Ticket ticket : tickets) {
+                            if ("đang xử lý".equals(ticket.getStatus())) {
+                                servingTicket = ticket.getCode();
+                                break;
+                            }
+                        }
+                        
+                        sb.append("|").append(dept).append("|").append(counterNumber).append("|").append(servingTicket);
+                    }
+                    out.println(sb.toString());
+                    continue;
+                }
+
                 // Xử lý yêu cầu gọi tiếp
                 if (line.startsWith("CALL_NEXT|")) {
                     String dept = line.substring("CALL_NEXT|".length());
@@ -372,11 +395,11 @@ public class ServerUI extends JFrame {
                 return "TƯ PHÁP - HỘ TỊCH, THANH TRA";
             case "Kiểm soát thủ tục hành chính":
                 return "KIỂM SOÁT THỦ TỤC HÀNH CHÍNH";
-            case "Dân Tộc - Tôn Giáo - Thi Đua Khen Thưởng - Văn Hóa - Khoa Học và Thông Tin":
+            case "Nội vụ, Y tế, Văn hóa - Xã hội, Khoa học - Công nghệ, Giáo dục - Đào tạo, Tôn giáo":
                 return "NỘI VỤ, Y TẾ, VĂN HÓA - XÃ HỘI, KHOA HỌC - CÔNG NGHỆ, GIÁO DỤC - ĐÀO TẠO, TÔN GIÁO";
-            case "Nông Nghiệp và Môi Trường":
-                return "NÔNG NGHIỆP MÔI TRƯỜNG";
-            case "Xây Dựng":
+            case "Đất đai, Nông nghiệp, Môi trường":
+                return "ĐẤT ĐAI, NÔNG NGHIỆP, MÔI TRƯỜNG";
+            case "Xây dựng":
                 return "XÂY DỰNG";
             case "Công thương, Tài chính":
                 return "CÔNG THƯƠNG, TÀI CHÍNH";
