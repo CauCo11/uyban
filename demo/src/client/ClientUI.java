@@ -43,8 +43,8 @@ public class ClientUI extends JFrame {
     private boolean testServerConnection() {
         try {
             Socket testSocket = new Socket();
-            testSocket.connect(new InetSocketAddress("localhost", 8888), 3000);
-            // testSocket.connect(new InetSocketAddress("10.83.198.168", 8888), 3000);
+            // testSocket.connect(new InetSocketAddress("localhost", 8888), 3000);
+            testSocket.connect(new InetSocketAddress("10.83.198.168", 8888), 3000);
             testSocket.close();
             return true;
         } catch (IOException e) {
@@ -165,8 +165,8 @@ public class ClientUI extends JFrame {
     private void connectToServer() {
         new Thread(() -> {
             try {
-                socket = new Socket("localhost", 8888);
-                // socket = new Socket("10.83.198.168", 8888);
+                // socket = new Socket("localhost", 8888);
+                socket = new Socket("10.83.198.168", 8888);
                 in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 out = new PrintWriter(socket.getOutputStream(), true);
                 updateStatus("Đã kết nối tới máy chủ!");
