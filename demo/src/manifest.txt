@@ -1,2 +1,2 @@
-Main-Class: ClientUI
+Main-Class: client.ClientUI
 Class-Path: .

@@ -6,10 +6,10 @@ import java.util.List;
 public class Config {
     public static final List<String> DEPARTMENTS = Arrays.asList(
         "Tư pháp - Hộ tịch, Thanh tra",
-        "Kiểm soát thủ tục hành chính", 
+        "Nội vụ - Y tế - Giáo dục và đào tạo", 
         "Dân Tộc - Tôn Giáo - Thi Đua Khen Thưởng - Văn Hóa - Khoa Học và Thông Tin",
-        "Nông Nghiệp và Môi Trường",
         "Xây Dựng",
+        "Nông nghiệp - Môi Trường",
         "Công thương, Tài chính"
     );
 
@@ -17,13 +17,13 @@ public class Config {
         switch (departmentName) {
             case "Tư pháp - Hộ tịch, Thanh tra":
                 return "1";
-            case "Kiểm soát thủ tục hành chính":
+            case "Nội vụ - Y tế - Giáo dục và đào tạo":
                 return "2";
             case "Dân Tộc - Tôn Giáo - Thi Đua Khen Thưởng - Văn Hóa - Khoa Học và Thông Tin":
                 return "3";
-            case "Nông Nghiệp và Môi Trường":
-                return "4";
             case "Xây Dựng":
+                return "4";
+            case "Nông nghiệp - Môi Trường":
                 return "5";
             case "Công thương, Tài chính":
                 return "6";

@@ -44,7 +44,8 @@ public class TVApp extends JFrame {
     private void connectToServer() {
         new Thread(() -> {
             try {
-                socket = new Socket("10.83.198.168", 8888);
+                socket = new Socket("192.168.1.200", 8888);
+                // socket = new Socket("UBND-NENH", 8888);
                 in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 out = new PrintWriter(socket.getOutputStream(), true);
                 

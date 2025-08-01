@@ -39,8 +39,8 @@ if not exist "src\client" (
     pause
     exit /b 1
 )
-if not exist "src\server\server" (
-    echo ❌ Không tìm thấy thư mục src\server\server
+if not exist "src\server" (
+    echo ❌ Không tìm thấy thư mục src\server
     pause
     exit /b 1
 )
@@ -63,7 +63,7 @@ if %errorlevel% neq 0 (
 )
 
 echo    - Biên dịch server files...
-javac -d . src\server\server\*.java
+javac -d . src\server\*.java
 if %errorlevel% neq 0 (
     echo ❌ Biên dịch server thất bại!
     pause
@@ -83,7 +83,7 @@ REM Tạo JAR files
 echo.
 echo [Bước 5] 📦 Tạo file JAR...
 echo    - Tạo ClientApp.jar...
-jar cfm ClientApp.jar manifest.txt client\*.class
+jar cfm ClientApp.jar manifest.txt client/*.class
 if %errorlevel% neq 0 (
     echo ❌ Tạo ClientApp.jar thất bại!
     pause
@@ -91,7 +91,8 @@ if %errorlevel% neq 0 (
 )
 
 echo    - Tạo ServerApp.jar...
-jar cfm ServerApp.jar manifest-server.txt server\*.class
+REM Đóng gói đúng các file .class của server (nằm trong server/server/)
+jar cfm ServerApp.jar manifest-server.txt server/*.class
 if %errorlevel% neq 0 (
     echo ❌ Tạo ServerApp.jar thất bại!
     pause
@@ -99,7 +100,7 @@ if %errorlevel% neq 0 (
 )
 
 echo    - Tạo TVApp.jar...
-jar cfm TVApp.jar manifest-tv.txt tv\*.class
+jar cfm TVApp.jar manifest-tv.txt tv/*.class
 if %errorlevel% neq 0 (
     echo ❌ Tạo TVApp.jar thất bại!
     pause
@@ -152,7 +153,7 @@ REM Tạo EXE files
 echo.
 echo [Bước 8] 🏗️  Tạo file EXE...
 echo    - Tạo ClientApp.exe...
-"%LAUNCH4J_PATH%" launch4j-config.xml
+"%LAUNCH4J_PATH%" launch4j-config.xml --icon images.ico
 if %errorlevel% eq 0 (
     echo ✅ ClientApp.exe tạo thành công!
 ) else (
@@ -160,7 +161,7 @@ if %errorlevel% eq 0 (
 )
 
 echo    - Tạo ServerApp.exe...
-"%LAUNCH4J_PATH%" launch4j-server-config.xml
+"%LAUNCH4J_PATH%" launch4j-server-config.xml --icon images.ico
 if %errorlevel% eq 0 (
     echo ✅ ServerApp.exe tạo thành công!
 ) else (
@@ -168,7 +169,7 @@ if %errorlevel% eq 0 (
 )
 
 echo    - Tạo TVApp.exe...
-"%LAUNCH4J_PATH%" launch4j-tv-config.xml
+"%LAUNCH4J_PATH%" launch4j-tv-config.xml --icon images.ico
 if %errorlevel% eq 0 (
     echo ✅ TVApp.exe tạo thành công!
 ) else (
@@ -264,6 +265,11 @@ echo    • Nếu lỗi "port already in use": tắt ứng dụng cũ
 echo    • Nếu không kết nối được: kiểm tra Windows Firewall
 echo    • Nếu thiếu Java: cài từ https://java.com/download
 echo.
+
+echo ================================================================
+echo.
+echo [Bước 10] 🚀 Khởi động ServerApp.jar...
+start "" java -jar ServerApp.jar
 
 echo ================================================================
 pause

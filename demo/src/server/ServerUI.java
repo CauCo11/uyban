@@ -393,14 +393,14 @@ public class ServerUI extends JFrame {
         switch (departmentName) {
             case "Tư pháp - Hộ tịch, Thanh tra":
                 return "TƯ PHÁP - HỘ TỊCH, THANH TRA";
-            case "Kiểm soát thủ tục hành chính":
-                return "KIỂM SOÁT THỦ TỤC HÀNH CHÍNH";
+            case "Nội vụ - Y tế - Giáo dục và đào tạo":
+                return "Nội vụ - Y tế - Giáo dục và đào tạo";
             case "Nội vụ, Y tế, Văn hóa - Xã hội, Khoa học - Công nghệ, Giáo dục - Đào tạo, Tôn giáo":
                 return "NỘI VỤ, Y TẾ, VĂN HÓA - XÃ HỘI, KHOA HỌC - CÔNG NGHỆ, GIÁO DỤC - ĐÀO TẠO, TÔN GIÁO";
-            case "Đất đai, Nông nghiệp, Môi trường":
-                return "ĐẤT ĐAI, NÔNG NGHIỆP, MÔI TRƯỜNG";
-            case "Xây dựng":
+            case "Xây Dựng":
                 return "XÂY DỰNG";
+            case "Nông nghiệp - Môi Trường":
+                return "NÔNG NGHIỆP - MÔI TRƯỜNG";
             case "Công thương, Tài chính":
                 return "CÔNG THƯƠNG, TÀI CHÍNH";
             default:
